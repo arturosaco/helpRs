@@ -1,9 +1,10 @@
 Package: helpRs
 Title: Collection of handy functions.
 Version: 0.1
-Authors@R: “Arturo Sánchez Correa <arturo.sanchezcorrea@gmail.com> "
+Authors@R: person("Arturo Sanchez Correa", role = c("aut", "cre"), email =
+    "arturo.sanchezcorrea@gmail.com")
 Description: What the package does (paragraph)
 Depends:
     R (>= 3.1.0)
-License: Whatever…
+License: MIT
 LazyData: true

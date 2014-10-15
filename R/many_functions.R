@@ -77,6 +77,7 @@ rm.var <- function(){
 #' Wrapper of grep that makes it more magrittr friendly
 #' @keywords grep
 #' @export
+#' @examples
 #' grepr()
 grepr <- function(string.vec, pattern){
   grep(pattern, string.vec, value = TRUE)
