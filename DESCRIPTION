@@ -5,5 +5,5 @@ Authors@R: “Arturo Sánchez Correa <arturo.sanchezcorrea@gmail.com> "
 Description: What the package does (paragraph)
 Depends:
     R (>= 3.1.0)
-License: Whatever… 
+License: Whatever…
 LazyData: true
