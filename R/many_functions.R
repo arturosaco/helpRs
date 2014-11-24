@@ -82,3 +82,33 @@ rm.var <- function(){
 grepr <- function(string.vec, pattern){
   grep(pattern, string.vec, value = TRUE)
 }
+
+
+#' Saves an object to the cache/ dir adding the date when the object was saved 
+#' @keywords cache 
+#' @export
+#' @examples
+#' cache.dated()
+cache.dated <- function(object){
+  object.name <- deparse(substitute(object))
+  saveRDS(object, file = 
+    paste0("cache/", Sys.Date() %>% gsub("-", "_", .), "_", 
+      object.name, ".rds"))
+  print(paste0("cache/", Sys.Date() %>% gsub("-", "_", .), "_", 
+      object.name, ".rds"))
+  invisible(NULL)
+}
+
+#' load the most recent version of an object, follows the namings conventions of cache.dated()
+#' @keywords cache 
+#' @export
+#' @examples
+#' cache.dated()
+load.dated.cache <- function(object.name){
+  files <- dir("cache")
+  file.match <- grep(paste0("[0-9]{4,4}_[0-9]{2,2}_[0-9]{2,2}_", object.name, "\\.rds"),
+    files, value = TRUE) %>% sort %>% tail(1) %>% 
+    file.path("cache", .) 
+  print(file.match)
+  readRDS(file.match)
+}
