@@ -112,3 +112,18 @@ load.dated.cache <- function(object.name){
   print(file.match)
   readRDS(file.match)
 }
+
+
+#' Wrapper for rbindlist that checks the stack every object in the input list that's a data.table
+#' @keywords cache 
+#' @export
+#' @examples
+#' cache.dated()
+rbindlist.valid <- function(list.data.tables.x){
+  lapply(list.data.tables.x, function(data.table.x){
+    if("data.table" %in% class(data.table.x))
+      return(data.table.x)
+    else
+      return(NULL)
+  }) %>% rbindlist
+} 
