@@ -121,7 +121,7 @@ load.dated.cache <- function(object.name){
 #' cache.dated()
 rbindlist.valid <- function(list.data.tables.x){
   lapply(list.data.tables.x, function(data.table.x){
-    if("data.table" %in% class(data.table.x))
+    if("data.table" %in% class(data.table.x) && nrow(data.table.x) > 0)
       return(data.table.x)
     else
       return(NULL)
