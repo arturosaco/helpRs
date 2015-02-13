@@ -104,7 +104,7 @@ cache.dated <- function(object){
 #' @export
 #' @examples
 #' cache.dated()
-load.dated.cache <- function(object.name){
+load.cache.dated <- function(object.name){
   files <- dir("cache")
   file.match <- grep(paste0("[0-9]{4,4}_[0-9]{2,2}_[0-9]{2,2}_", object.name, "\\.rds"),
     files, value = TRUE) %>% sort %>% tail(1) %>% 
@@ -118,7 +118,7 @@ load.dated.cache <- function(object.name){
 #' @keywords cache 
 #' @export
 #' @examples
-#' cache.dated()
+#' rbindlist.valid()
 rbindlist.valid <- function(list.data.tables.x){
   lapply(list.data.tables.x, function(data.table.x){
     if("data.table" %in% class(data.table.x) && nrow(data.table.x) > 0)
@@ -127,3 +127,59 @@ rbindlist.valid <- function(list.data.tables.x){
       return(NULL)
   }) %>% rbindlist
 } 
+
+
+#' Deletes cache object that are older than clean.older.than.days days old
+#' Requires the same file structure as cache.dated and load.cache.dated
+#' @keywords cache 
+#' @export
+#' @examples
+#' clean.old.cache()
+
+clean.cache.dated <- function(clean.older.than.days = 7, remove = FALSE){
+  library(plyr)
+  library(dplyr)
+  library(magrittr)
+
+  cached.files <- dir("cache") %>% 
+    grepr("[0-9]{4,4}_[0-9]{2,2}_[0-9]{2,2}_[a-zA-Z0-9\\.]+\\.rds")
+
+  cached.dates <- cached.files %>% 
+    gsub("([0-9]{4,4}_[0-9]{2,2}_[0-9]{2,2}).+", "\\1", .) %>%
+    gsub("_", "-", .) %>%
+    as.Date
+
+  cached.object <- cached.files %>% 
+    gsub("([0-9]{4,4}_[0-9]{2,2}_[0-9]{2,2})_", "", .) 
+
+  all.files.df <- data.frame(object = cached.object, 
+    file = cached.files, 
+    cache.date = cached.dates)
+
+  all.files.df %>%
+    ddply("object", function(sub){
+      sub %>% 
+        arrange(cache.date) %>%
+        head(nrow(sub) - 1)
+    }) ->
+  files.to.remove.df
+
+  if(nrow(files.to.remove.df) >= nrow(all.files.df))
+    stop("Something went wrong and I stopped before deleting anything")
+  # clean.older.than.days <- 30
+
+  files.to.remove.df %>% 
+    mutate(cache.age = Sys.Date() - cache.date) %>%
+    filter("cache.age" >= clean.older.than.days) %>%
+    use_series(file) %>%
+    as.character ->
+  files.to.remove.chr
+
+  system.rm.string <- files.to.remove.chr %>%
+    paste0("cache/", .) %>%
+    paste(collapse = ", ") %>%
+    paste("rm", .)
+  if(remove)
+    system(system.rm.string)
+  return(files.to.remove.chr)
+}
