@@ -103,7 +103,7 @@ cache.dated <- function(object){
 #' @keywords cache 
 #' @export
 #' @examples
-#' cache.dated()
+#' load.cache.dated()
 load.cache.dated <- function(object.name){
   files <- dir("cache")
   file.match <- grep(paste0("[0-9]{4,4}_[0-9]{2,2}_[0-9]{2,2}_", object.name, "\\.rds"),
@@ -134,7 +134,7 @@ rbindlist.valid <- function(list.data.tables.x){
 #' @keywords cache 
 #' @export
 #' @examples
-#' clean.old.cache()
+#' clean.cache.dated()
 
 clean.cache.dated <- function(clean.older.than.days = 7, remove = FALSE){
   library(plyr)
