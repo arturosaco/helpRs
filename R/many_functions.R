@@ -177,7 +177,7 @@ clean.cache.dated <- function(clean.older.than.days = 7, remove = FALSE){
 
   system.rm.string <- files.to.remove.chr %>%
     paste0("cache/", .) %>%
-    paste(collapse = ", ") %>%
+    paste(collapse = " ") %>%
     paste("rm", .)
   if(remove)
     system(system.rm.string)
