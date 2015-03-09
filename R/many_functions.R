@@ -170,7 +170,7 @@ clean.cache.dated <- function(clean.older.than.days = 7, remove = FALSE){
 
   files.to.remove.df %>% 
     mutate(cache.age = Sys.Date() - cache.date) %>%
-    filter("cache.age" >= clean.older.than.days) %>%
+    filter(cache.age >= clean.older.than.days) %>%
     use_series(file) %>%
     as.character ->
   files.to.remove.chr
