@@ -183,3 +183,23 @@ clean.cache.dated <- function(clean.older.than.days = 7, remove = FALSE){
     system(system.rm.string)
   return(files.to.remove.chr)
 }
+
+
+#' Returns the cleaned url using the list of top level domains from tldextract
+#' @keywords url
+#' @export
+#' @examples
+#' clean.urls.f()
+
+clean.urls.f <- function(original.urls, tld = tldextract::getTLD()){
+    original.urls %>%
+        # unique %>%
+        str_trim %>% 
+        gsub("(https?\\:\\/\\/)?(\\/?www.?[0-9]?\\.+)?", "", .) %>%
+        gsub("/$", "", .) %>%
+        domain ->
+    clean.urls
+    clean.urls.tld <- tldextract::tldextract(clean.urls, tldnames = tld) 
+    clean.urls.out <- paste(clean.urls.tld$domain, clean.urls.tld$tld, sep = ".")
+    return(clean.urls.out)
+}
