@@ -203,3 +203,15 @@ clean.urls.f <- function(original.urls, tld = tldextract::getTLD()){
     clean.urls.out <- paste(clean.urls.tld$domain, clean.urls.tld$tld, sep = ".")
     return(clean.urls.out)
 }
+
+
+#' Saves the success status of a script to a database table, to be used at the end of sourced scripts
+#' @keywords status, pipelines, etl
+#' @export
+#' @examples
+#' write.success()
+
+write.success <- function(con.status, table.name = "task_status"){
+    status.aux <- data.frame(task = sys.frame(1)$ofile, completion_date = as.character(Sys.Date()))
+    dbWriteTable(con.status, table.name, status.aux, append = TRUE)
+}
