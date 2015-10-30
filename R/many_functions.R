@@ -205,13 +205,45 @@ clean.urls.f <- function(original.urls, tld = tldextract::getTLD()){
 }
 
 
-#' Saves the success status of a script to a database table, to be used at the end of sourced scripts
-#' @keywords status, pipelines, etl
+#' Sends error email with error log attached
+#' @keywords email
 #' @export
 #' @examples
-#' write.success()
+#' error.email.f()
 
-write.success <- function(con.status, table.name = "task_status"){
-    status.aux <- data.frame(task = sys.frame(1)$ofile, completion_date = as.character(Sys.Date()))
-    dbWriteTable(con.status, table.name, status.aux, append = TRUE)
+error.email.f <- function(error_log.path, error.display.name, 
+    admin.email, error.email){
+    function(e){
+        sink()
+        send.mail(from = error.email,
+          to = admin.email,
+          subject = paste("Error in", error.display.name),
+          body = as.character(e),
+          # html = TRUE,
+          # inline = TRUE,
+          attach.files = error_log.path,
+          smtp = list(host.name = "gmail-smtp-in.l.google.com", port = 25),
+          authenticate = FALSE,
+          send = TRUE,
+          debug = FALSE)
+    }
+}
+
+
+#' Wraps source of script adding email sending on error and dbWriting on success
+#' @keywords source
+#' @export
+#' @examples
+#' source.wrapper()
+
+source.wrapper <- function(script.path, con.status, error_log.path,
+    admin.email, error.email){
+    flog.trace(paste("Running", script.path), name = "main")
+    tryCatch({
+        source(script.path)
+        status.aux <- data.frame(task = script.path, completion_date = as.character(Sys.Date()))
+        dbWriteTable(con.status, "task_status", status.aux, append = TRUE)
+    }, error = error.email.f(error_log.path = error_log.path,
+        error.display.name = script.path, admin.email, error.email))
+    flog.trace(paste("Finished running", script.path), name = "main")
 }
