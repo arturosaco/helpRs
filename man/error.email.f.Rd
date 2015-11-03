@@ -9,8 +9,5 @@ error.email.f(error_log.path, error.display.name, admin.email, error.email)
 \description{
 Sends error email with error log attached
 }
-\examples{
-error.email.f()
-}
 \keyword{email}
 

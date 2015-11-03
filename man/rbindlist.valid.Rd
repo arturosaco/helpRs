@@ -9,8 +9,5 @@ rbindlist.valid(list.data.tables.x)
 \description{
 Wrapper for rbindlist that checks the stack every object in the input list that's a data.table
 }
-\examples{
-rbindlist.valid()
-}
 \keyword{cache}
 

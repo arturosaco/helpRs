@@ -10,8 +10,5 @@ source.wrapper(script.path, con.status, error_log.path, admin.email,
 \description{
 Wraps source of script adding email sending on error and dbWriting on success
 }
-\examples{
-source.wrapper()
-}
 \keyword{source}
 

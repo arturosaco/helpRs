@@ -14,8 +14,5 @@ unix2POSIXct(time)
 \description{
 Turns a unixtimestamp into a POSIXct date
 }
-\examples{
-unix2POSIXct()
-}
 \keyword{time}
 

@@ -4,13 +4,10 @@
 \alias{clean.urls.f}
 \title{Returns the cleaned url using the list of top level domains from tldextract}
 \usage{
-clean.urls.f(original.urls, tld = tldextract::getTLD())
+clean.urls.f(original.urls, tld = getTLD())
 }
 \description{
 Returns the cleaned url using the list of top level domains from tldextract
-}
-\examples{
-clean.urls.f()
 }
 \keyword{url}
 

@@ -9,8 +9,5 @@ cache.dated(object)
 \description{
 Saves an object to the cache/ dir adding the date when the object was saved
 }
-\examples{
-cache.dated()
-}
 \keyword{cache}
 

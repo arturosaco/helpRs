@@ -12,8 +12,5 @@ lsos(..., n = 10)
 \description{
 Lists object with sizes
 }
-\examples{
-lsos()
-}
 \keyword{ls}
 

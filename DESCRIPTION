@@ -6,5 +6,17 @@ Authors@R: person("Arturo Sanchez Correa", role = c("aut", "cre"), email =
 Description: What the package does (paragraph)
 Depends:
     R (>= 3.1.0)
+Imports:
+    dplyr,
+    data.table,
+    magrittr,
+    helpRs,
+    stringr,
+    urltools,
+    tldextract,
+    RPostgres,
+    httr,
+    rJava,
+    mailR
 License: MIT
 LazyData: true

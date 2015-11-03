@@ -11,8 +11,5 @@ clean.cache.dated(clean.older.than.days = 7, remove = FALSE)
 Deletes cache object that are older than clean.older.than.days days old
 Requires the same file structure as cache.dated and load.cache.dated
 }
-\examples{
-clean.cache.dated()
-}
 \keyword{cache}
 

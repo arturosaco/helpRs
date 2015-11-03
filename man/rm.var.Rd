@@ -9,8 +9,5 @@ rm.var()
 \description{
 Remove everything but functions from the global environment
 }
-\examples{
-rm.var()
-}
 \keyword{rm}
 

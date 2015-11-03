@@ -12,8 +12,5 @@ count.na(data)
 \description{
 Counts the number of NAs in a data.frame
 }
-\examples{
-count.na()
-}
 \keyword{counts}
 

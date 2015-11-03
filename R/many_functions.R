@@ -3,8 +3,7 @@
 #' @param time class output class.
 #' @keywords time
 #' @export
-#' @examples
-#' unix2POSIXct()
+
 unix2POSIXct <- function (time)   structure(time, class = 
   c("POSIXt", "POSIXct"))
 
@@ -12,8 +11,7 @@ unix2POSIXct <- function (time)   structure(time, class =
 #' @param data.
 #' @keywords counts
 #' @export
-#' @examples
-#' count.na()
+
 count.na <- function(data) sapply(data, function(x) sum(is.na(x)))
 
 #' Plumbing for lsos()
@@ -23,9 +21,7 @@ count.na <- function(data) sapply(data, function(x) sum(is.na(x)))
 #' @param decreasing d.
 #' @param head e.
 #' @param n f.
-#' @keywords ls
-#' @examples
-#' .ls.objects()
+
 .ls.objects <- function (pos = 1, pattern, order.by,
                         decreasing=FALSE, head=FALSE, n=5) {
     napply <- function(names.x, fn) sapply(names.x, function(x)
@@ -48,14 +44,10 @@ count.na <- function(data) sapply(data, function(x) sum(is.na(x)))
     out
 }
 
-
-
 #' Lists object with sizes
 #' @param n number of objects to display.
 #' @keywords ls
 #' @export
-#' @examples
-#' lsos()
 lsos <- function(..., n = 10) {
     .ls.objects(..., order.by = "Size(MB)", decreasing = TRUE, head = TRUE, n = n)
 }
@@ -64,8 +56,7 @@ lsos <- function(..., n = 10) {
 #' Remove everything but functions from the global environment
 #' @keywords rm
 #' @export
-#' @examples
-#' rm.var()
+
 rm.var <- function(){
   objs <- ls(pos = ".GlobalEnv")
   rm(list = objs[sapply(objs, function(x) class(get(x))) != "function"], 
@@ -77,8 +68,7 @@ rm.var <- function(){
 #' Wrapper of grep that makes it more magrittr friendly
 #' @keywords grep
 #' @export
-#' @examples
-#' grepr()
+
 grepr <- function(string.vec, pattern){
   grep(pattern, string.vec, value = TRUE)
 }
@@ -87,8 +77,8 @@ grepr <- function(string.vec, pattern){
 #' Saves an object to the cache/ dir adding the date when the object was saved 
 #' @keywords cache 
 #' @export
-#' @examples
-#' cache.dated()
+#' @import magrittr
+
 cache.dated <- function(object){
   object.name <- deparse(substitute(object))
   saveRDS(object, file = 
@@ -102,8 +92,8 @@ cache.dated <- function(object){
 #' load the most recent version of an object, follows the namings conventions of cache.dated()
 #' @keywords cache 
 #' @export
-#' @examples
-#' load.cache.dated()
+#' @import magrittr
+
 load.cache.dated <- function(object.name){
   files <- dir("cache")
   file.match <- grep(paste0("[0-9]{4,4}_[0-9]{2,2}_[0-9]{2,2}_", object.name, "\\.rds"),
@@ -117,8 +107,9 @@ load.cache.dated <- function(object.name){
 #' Wrapper for rbindlist that checks the stack every object in the input list that's a data.table
 #' @keywords cache 
 #' @export
-#' @examples
-#' rbindlist.valid()
+#' @import magrittr
+#' @import data.table
+
 rbindlist.valid <- function(list.data.tables.x){
   lapply(list.data.tables.x, function(data.table.x){
     if("data.table" %in% class(data.table.x) && nrow(data.table.x) > 0)
@@ -133,13 +124,10 @@ rbindlist.valid <- function(list.data.tables.x){
 #' Requires the same file structure as cache.dated and load.cache.dated
 #' @keywords cache 
 #' @export
-#' @examples
-#' clean.cache.dated()
+#' @import magrittr
+#' @import dplyr
 
 clean.cache.dated <- function(clean.older.than.days = 7, remove = FALSE){
-  library(plyr)
-  library(dplyr)
-  library(magrittr)
 
   cached.files <- dir("cache") %>% 
     grepr("[0-9]{4,4}_[0-9]{2,2}_[0-9]{2,2}_[a-zA-Z0-9\\.]+\\.rds")
@@ -157,7 +145,7 @@ clean.cache.dated <- function(clean.older.than.days = 7, remove = FALSE){
     cache.date = cached.dates)
 
   all.files.df %>%
-    ddply("object", function(sub){
+    plyr::ddply("object", function(sub){
       sub %>% 
         arrange(cache.date) %>%
         head(nrow(sub) - 1)
@@ -188,18 +176,18 @@ clean.cache.dated <- function(clean.older.than.days = 7, remove = FALSE){
 #' Returns the cleaned url using the list of top level domains from tldextract
 #' @keywords url
 #' @export
-#' @examples
-#' clean.urls.f()
+#' @import magrittr
+#' @import stringr
+#' @import tldextract
 
-clean.urls.f <- function(original.urls, tld = tldextract::getTLD()){
+clean.urls.f <- function(original.urls, tld = getTLD()){
     original.urls %>%
-        # unique %>%
         str_trim %>% 
         gsub("(https?\\:\\/\\/)?(\\/?www.?[0-9]?\\.+)?", "", .) %>%
         gsub("/$", "", .) %>%
         domain ->
     clean.urls
-    clean.urls.tld <- tldextract::tldextract(clean.urls, tldnames = tld) 
+    clean.urls.tld <- tldextract(clean.urls, tldnames = tld) 
     clean.urls.out <- paste(clean.urls.tld$domain, clean.urls.tld$tld, sep = ".")
     return(clean.urls.out)
 }
@@ -208,8 +196,8 @@ clean.urls.f <- function(original.urls, tld = tldextract::getTLD()){
 #' Sends error email with error log attached
 #' @keywords email
 #' @export
-#' @examples
-#' error.email.f()
+#' @import rJava
+#' @import mailR
 
 error.email.f <- function(error_log.path, error.display.name, 
     admin.email, error.email){
@@ -233,8 +221,8 @@ error.email.f <- function(error_log.path, error.display.name,
 #' Wraps source of script adding email sending on error and dbWriting on success
 #' @keywords source
 #' @export
-#' @examples
-#' source.wrapper()
+#' @import RPostgres
+#' @import futile.logger
 
 source.wrapper <- function(script.path, con.status, error_log.path,
     admin.email, error.email){

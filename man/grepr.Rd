@@ -9,8 +9,5 @@ grepr(string.vec, pattern)
 \description{
 Wrapper of grep that makes it more magrittr friendly
 }
-\examples{
-grepr()
-}
 \keyword{grep}
 

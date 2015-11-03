@@ -9,8 +9,5 @@ load.cache.dated(object.name)
 \description{
 load the most recent version of an object, follows the namings conventions of cache.dated()
 }
-\examples{
-load.cache.dated()
-}
 \keyword{cache}
 
