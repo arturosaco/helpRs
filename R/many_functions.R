@@ -179,6 +179,7 @@ clean.cache.dated <- function(clean.older.than.days = 7, remove = FALSE){
 #' @import magrittr
 #' @import stringr
 #' @import tldextract
+#' @import urltools
 
 clean.urls.f <- function(original.urls, tld = getTLD()){
     original.urls %>%
