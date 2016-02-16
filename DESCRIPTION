@@ -10,7 +10,6 @@ Imports:
     dplyr,
     data.table,
     magrittr,
-    helpRs,
     stringr,
     urltools,
     tldextract,
@@ -20,3 +19,4 @@ Imports:
     mailR
 License: MIT
 LazyData: true
+RoxygenNote: 5.0.1
