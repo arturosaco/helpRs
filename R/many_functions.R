@@ -79,14 +79,23 @@ grepr <- function(string.vec, pattern){
 #' @export
 #' @import magrittr
 
-cache.dated <- function(object){
+cache.dated <- function(object, use_feather = FALSE){
   object.name <- deparse(substitute(object))
-  saveRDS(object, file = 
-    paste0("cache/", Sys.Date() %>% gsub("-", "_", .), "_", 
-      object.name, ".rds"))
-  print(paste0("cache/", Sys.Date() %>% gsub("-", "_", .), "_", 
-      object.name, ".rds"))
-  invisible(NULL)
+    if(!use_feather){
+    saveRDS(object, file = 
+      paste0("cache/", Sys.Date() %>% gsub("-", "_", .), "_", 
+        object.name, ".rds"))
+    print(paste0("cache/", Sys.Date() %>% gsub("-", "_", .), "_", 
+        object.name, ".rds"))
+    invisible(NULL)
+  } else {
+    write_feather(object, path = 
+      paste0("cache/", Sys.Date() %>% gsub("-", "_", .), "_", 
+        object.name, ".feather"))
+    print(paste0("cache/", Sys.Date() %>% gsub("-", "_", .), "_", 
+        object.name, ".feather"))
+    invisible(NULL)
+  }
 }
 
 #' load the most recent version of an object, follows the namings conventions of cache.dated()
@@ -96,11 +105,14 @@ cache.dated <- function(object){
 
 load.cache.dated <- function(object.name){
   files <- dir("cache")
-  file.match <- grep(paste0("[0-9]{4,4}_[0-9]{2,2}_[0-9]{2,2}_", object.name, "\\.rds"),
+  file.match <- grep(paste0("[0-9]{4,4}_[0-9]{2,2}_[0-9]{2,2}_", object.name, "\\.(rds|feather)"),
     files, value = TRUE) %>% sort %>% tail(1) %>% 
     file.path("cache", .) 
   print(file.match)
-  readRDS(file.match)
+  if(grepl("\\.feather$", file.match))
+    read_feather(file.match)
+  else
+    readRDS(file.match)
 }
 
 

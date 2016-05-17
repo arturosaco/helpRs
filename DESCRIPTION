@@ -16,7 +16,9 @@ Imports:
     RPostgres,
     httr,
     rJava,
-    mailR
+    mailR,
+    futile.logger,
+    feather
 License: MIT
 LazyData: true
 RoxygenNote: 5.0.1

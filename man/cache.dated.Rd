@@ -4,7 +4,7 @@
 \alias{cache.dated}
 \title{Saves an object to the cache/ dir adding the date when the object was saved}
 \usage{
-cache.dated(object)
+cache.dated(object, use_feather = FALSE)
 }
 \description{
 Saves an object to the cache/ dir adding the date when the object was saved
