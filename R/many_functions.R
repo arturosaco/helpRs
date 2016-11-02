@@ -248,3 +248,11 @@ source.wrapper <- function(script.path, con.status, error_log.path,
         error.display.name = script.path, admin.email, error.email))
     flog.trace(paste("Finished running", script.path), name = "main")
 }
+
+#' helper to turn an R vector to SQL format
+#' @keywords source
+#' @export
+
+vector.to.SQL <- function(x){
+  paste0("(", paste(paste0("'", x, "'"), collapse = ","), ")")
+} 
