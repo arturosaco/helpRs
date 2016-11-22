@@ -237,13 +237,11 @@ error.email.f <- function(error_log.path, error.display.name,
 #' @import RPostgres
 #' @import futile.logger
 
-source.wrapper <- function(script.path, con.status, error_log.path,
+source.wrapper <- function(script.path, error_log.path,
     admin.email, error.email){
     flog.trace(paste("Running", script.path), name = "main")
     tryCatch({
         source(script.path)
-        status.aux <- data.frame(task = script.path, completion_date = as.character(Sys.Date()))
-        dbWriteTable(con.status, "task_status", status.aux, append = TRUE)
     }, error = error.email.f(error_log.path = error_log.path,
         error.display.name = script.path, admin.email, error.email))
     flog.trace(paste("Finished running", script.path), name = "main")
@@ -256,3 +254,9 @@ source.wrapper <- function(script.path, con.status, error_log.path,
 vector.to.SQL <- function(x){
   paste0("(", paste(paste0("'", x, "'"), collapse = ","), ")")
 } 
+
+#' get the first element of the class types for every element in a list
+#' @keywords source
+#' @export
+
+list.class <- function(x) sapply(x, function(x) class(x)[1])

@@ -4,8 +4,7 @@
 \alias{source.wrapper}
 \title{Wraps source of script adding email sending on error and dbWriting on success}
 \usage{
-source.wrapper(script.path, con.status, error_log.path, admin.email,
-  error.email)
+source.wrapper(script.path, error_log.path, admin.email, error.email)
 }
 \description{
 Wraps source of script adding email sending on error and dbWriting on success
