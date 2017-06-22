@@ -4,7 +4,10 @@
 \alias{cache.dated}
 \title{Saves an object to the cache/ dir adding the date when the object was saved}
 \usage{
-cache.dated(object, use_feather = FALSE)
+cache.dated(object, use_feather = FALSE, use_s3 = FALSE,
+  bucket_name = NULL, AWS_ACCESS_KEY_ID = Sys.getenv("AWSAccessKeyId"),
+  AWS_SECRET_ACCESS_KEY = Sys.getenv("AWSSecretKey"),
+  AWS_DEFAULT_REGION = "eu-west-1")
 }
 \description{
 Saves an object to the cache/ dir adding the date when the object was saved

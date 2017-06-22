@@ -79,40 +79,117 @@ grepr <- function(string.vec, pattern){
 #' @export
 #' @import magrittr
 
-cache.dated <- function(object, use_feather = FALSE){
+cache.dated <- function(object, use_feather = FALSE, use_s3 = FALSE,
+  bucket_name = NULL,
+  AWS_ACCESS_KEY_ID = Sys.getenv("AWSAccessKeyId"),
+  AWS_SECRET_ACCESS_KEY = Sys.getenv("AWSSecretKey"), 
+  AWS_DEFAULT_REGION = "eu-west-1"){
+
   object.name <- deparse(substitute(object))
+  if(!use_s3){
     if(!use_feather){
-    saveRDS(object, file = 
-      paste0("cache/", Sys.Date() %>% gsub("-", "_", .), "_", 
-        object.name, ".rds"))
-    print(paste0("cache/", Sys.Date() %>% gsub("-", "_", .), "_", 
-        object.name, ".rds"))
-    invisible(NULL)
+      saveRDS(object, file = 
+        paste0("cache/", Sys.Date() %>% gsub("-", "_", .), "_", 
+          object.name, ".rds"))
+      print(paste0("cache/", Sys.Date() %>% gsub("-", "_", .), "_", 
+          object.name, ".rds"))
+      invisible(NULL)
+    } else {
+      write_feather(object, path = 
+        paste0("cache/", Sys.Date() %>% gsub("-", "_", .), "_", 
+          object.name, ".feather"))
+      print(paste0("cache/", Sys.Date() %>% gsub("-", "_", .), "_", 
+          object.name, ".feather"))
+      invisible(NULL)
+    }
   } else {
-    write_feather(object, path = 
-      paste0("cache/", Sys.Date() %>% gsub("-", "_", .), "_", 
-        object.name, ".feather"))
-    print(paste0("cache/", Sys.Date() %>% gsub("-", "_", .), "_", 
-        object.name, ".feather"))
-    invisible(NULL)
+    if(is.null(bucket_name))
+      stop("Must specify bucket_name when using S3")
+    if(any(c(AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY) == "")){
+      stop("Couldn't pick up AWS credentials from ENV, please pass them manually")
+    }
+    Sys.setenv(
+      "AWS_ACCESS_KEY_ID" = AWS_ACCESS_KEY_ID,
+      "AWS_SECRET_ACCESS_KEY" = AWS_SECRET_ACCESS_KEY,
+      "AWS_DEFAULT_REGION" = AWS_DEFAULT_REGION
+    )
+    local_path <- paste0("cache/", object.name, ".rds")
+    s3_path <- paste0(Sys.Date() %>% gsub("-", "_", .), "_", object.name, ".zip")
+    saveRDS(object, file = local_path)
+    system(paste("zip", paste0("cache/", s3_path), local_path))
+    print("Uploading cache to S3")
+    put_object_response <- put_object(
+      file = paste0("cache/", s3_path), 
+      object = s3_path, bucket = bucket_name
+    )
+    print(put_object_response)
+    if(put_object_response)
+      file.remove(paste0("cache/", s3_path))
+    Sys.unsetenv("AWS_ACCESS_KEY_ID")
+    Sys.unsetenv("AWS_SECRET_ACCESS_KEY")
+    Sys.unsetenv("AWS_DEFAULT_REGION")
+    return(TRUE)
   }
 }
 
-#' load the most recent version of an object, follows the namings conventions of cache.dated()
+#' load the most recent version of an object, follows the naming conventions of cache.dated()
 #' @keywords cache 
 #' @export
 #' @import magrittr
 
-load.cache.dated <- function(object.name){
-  files <- dir("cache")
-  file.match <- grep(paste0("[0-9]{4,4}_[0-9]{2,2}_[0-9]{2,2}_", object.name, "\\.(rds|feather)"),
-    files, value = TRUE) %>% sort %>% tail(1) %>% 
-    file.path("cache", .) 
-  print(file.match)
-  if(grepl("\\.feather$", file.match))
-    read_feather(file.match)
-  else
-    readRDS(file.match)
+load.cache.dated <- function(object.name, 
+  use_s3 = FALSE, 
+  bucket_name = NULL, force_s3_check = TRUE,
+  AWS_ACCESS_KEY_ID = Sys.getenv("AWSAccessKeyId"),
+  AWS_SECRET_ACCESS_KEY = Sys.getenv("AWSSecretKey"), 
+  AWS_DEFAULT_REGION = "eu-west-1"
+  ){
+
+  if(!use_s3){
+    files <- dir("cache")
+    file.match <- grep(paste0("[0-9]{4,4}_[0-9]{2,2}_[0-9]{2,2}_", object.name, "\\.(rds|feather)"),
+      files, value = TRUE) %>% sort %>% tail(1) %>% 
+      file.path("cache", .) 
+    print(file.match)
+    if(grepl("\\.feather$", file.match))
+      read_feather(file.match)
+    else
+      readRDS(file.match)
+  } else {
+    if(any(c(AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY) == "")){
+      stop("Couldn't pick up AWS credentials from ENV, please pass them manually")
+    }
+    Sys.setenv(
+      "AWS_ACCESS_KEY_ID" = AWS_ACCESS_KEY_ID,
+      "AWS_SECRET_ACCESS_KEY" = AWS_SECRET_ACCESS_KEY,
+      "AWS_DEFAULT_REGION" = AWS_DEFAULT_REGION
+    )
+
+    if((paste0(object.name, ".rds") %in% dir("cache")) & !force_s3_check){
+      Sys.unsetenv("AWS_ACCESS_KEY_ID")
+      Sys.unsetenv("AWS_SECRET_ACCESS_KEY")
+      Sys.unsetenv("AWS_DEFAULT_REGION")
+      return(readRDS(paste0("cache/", object.name, ".rds")))
+    } else {
+      if(is.null(bucket_name))
+        stop("Must specify bucket_name when using S3")
+      bucket_df<- get_bucket_df(bucket_name)
+      files <- bucket_df$Key
+      file.match <- grep(paste0("[0-9]{4,4}_[0-9]{2,2}_[0-9]{2,2}_", object.name, "\\.zip"),
+        files, value = TRUE)
+      download_object_response <- save_object(file.match, 
+        file = file.path("cache", file.match) , 
+        bucket = bucket_name
+      )
+      unzip.response <- system(paste0("unzip -o ", download_object_response, " -d ./"))
+      if(unzip.response == 0)
+        file.remove(download_object_response)
+      Sys.unsetenv("AWS_ACCESS_KEY_ID")
+      Sys.unsetenv("AWS_SECRET_ACCESS_KEY")
+      Sys.unsetenv("AWS_DEFAULT_REGION")
+      return(readRDS(paste0("cache/", object.name, ".rds")))
+    }    
+  }
 }
 
 
@@ -234,7 +311,6 @@ error.email.f <- function(error_log.path, error.display.name,
 #' Wraps source of script adding email sending on error and dbWriting on success
 #' @keywords source
 #' @export
-#' @import RPostgres
 #' @import futile.logger
 
 source.wrapper <- function(script.path, error_log.path,

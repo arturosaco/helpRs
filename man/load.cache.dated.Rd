@@ -2,12 +2,15 @@
 % Please edit documentation in R/many_functions.R
 \name{load.cache.dated}
 \alias{load.cache.dated}
-\title{load the most recent version of an object, follows the namings conventions of cache.dated()}
+\title{load the most recent version of an object, follows the naming conventions of cache.dated()}
 \usage{
-load.cache.dated(object.name)
+load.cache.dated(object.name, use_s3 = FALSE, bucket_name = NULL,
+  force_s3_check = TRUE, AWS_ACCESS_KEY_ID = Sys.getenv("AWSAccessKeyId"),
+  AWS_SECRET_ACCESS_KEY = Sys.getenv("AWSSecretKey"),
+  AWS_DEFAULT_REGION = "eu-west-1")
 }
 \description{
-load the most recent version of an object, follows the namings conventions of cache.dated()
+load the most recent version of an object, follows the naming conventions of cache.dated()
 }
 \keyword{cache}
 
