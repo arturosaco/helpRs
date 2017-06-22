@@ -78,6 +78,7 @@ grepr <- function(string.vec, pattern){
 #' @keywords cache 
 #' @export
 #' @import magrittr
+#' @import aws.s3
 
 cache.dated <- function(object, use_feather = FALSE, use_s3 = FALSE,
   bucket_name = NULL,
@@ -122,7 +123,7 @@ cache.dated <- function(object, use_feather = FALSE, use_s3 = FALSE,
       file = paste0("cache/", s3_path), 
       object = s3_path, bucket = bucket_name
     )
-    print(put_object_response)
+    # print(put_object_response)
     if(put_object_response)
       file.remove(paste0("cache/", s3_path))
     Sys.unsetenv("AWS_ACCESS_KEY_ID")
@@ -136,6 +137,7 @@ cache.dated <- function(object, use_feather = FALSE, use_s3 = FALSE,
 #' @keywords cache 
 #' @export
 #' @import magrittr
+#' @import aws.s3
 
 load.cache.dated <- function(object.name, 
   use_s3 = FALSE, 
