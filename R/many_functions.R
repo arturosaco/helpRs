@@ -8,7 +8,7 @@ unix2POSIXct <- function (time)   structure(time, class =
   c("POSIXt", "POSIXct"))
 
 #' Counts the number of NAs in a data.frame
-#' @param data.
+#' @param data data
 #' @keywords counts
 #' @export
 
@@ -178,7 +178,7 @@ load.cache.dated <- function(object.name,
       bucket_df<- get_bucket_df(bucket_name)
       files <- bucket_df$Key
       file.match <- grep(paste0("[0-9]{4,4}_[0-9]{2,2}_[0-9]{2,2}_", object.name, "\\.zip"),
-        files, value = TRUE)
+        files, value = TRUE) %>% sort %>% tail(1)
       download_object_response <- save_object(file.match, 
         file = file.path("cache", file.match) , 
         bucket = bucket_name

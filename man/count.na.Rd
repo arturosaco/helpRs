@@ -6,6 +6,9 @@
 \usage{
 count.na(data)
 }
+\arguments{
+\item{data}{data}
+}
 \description{
 Counts the number of NAs in a data.frame
 }
