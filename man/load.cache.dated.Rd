@@ -8,7 +8,7 @@ load.cache.dated(object.name, cache_date = NULL, use_s3 = FALSE,
   bucket_name = NULL, force_s3_check = TRUE,
   AWS_ACCESS_KEY_ID = Sys.getenv("AWSAccessKeyId"),
   AWS_SECRET_ACCESS_KEY = Sys.getenv("AWSSecretKey"),
-  AWS_DEFAULT_REGION = "eu-west-1")
+  AWS_DEFAULT_REGION = "eu-west-1", zip_data_bool = TRUE)
 }
 \description{
 load the most recent version of an object, follows the naming conventions of cache.dated()

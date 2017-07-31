@@ -9,7 +9,8 @@ cache.dated <- function(object, use_feather = FALSE, cache_date = Sys.Date(),
   bucket_name = NULL,
   AWS_ACCESS_KEY_ID = Sys.getenv("AWSAccessKeyId"),
   AWS_SECRET_ACCESS_KEY = Sys.getenv("AWSSecretKey"), 
-  AWS_DEFAULT_REGION = "eu-west-1"){
+  AWS_DEFAULT_REGION = "eu-west-1",
+  zip_data_bool = TRUE){
 
   object.name <- deparse(substitute(object))
   if(!use_s3){
@@ -39,10 +40,20 @@ cache.dated <- function(object, use_feather = FALSE, cache_date = Sys.Date(),
       "AWS_SECRET_ACCESS_KEY" = AWS_SECRET_ACCESS_KEY,
       "AWS_DEFAULT_REGION" = AWS_DEFAULT_REGION
     )
-    local_path <- paste0("cache/", object.name, ".rds")
-    s3_path <- paste0(cache_date %>% gsub("-", "_", .), "_", object.name, ".zip")
-    saveRDS(object, file = local_path)
-    system(paste("zip", paste0("cache/", s3_path), local_path))
+    
+    if(zip_data_bool){
+      local_path <- paste0("cache/", object.name, ".rds")
+      saveRDS(object, file = local_path)
+      s3_path <- paste0(cache_date %>% gsub("-", "_", .), "_", object.name, ".zip")
+      system(paste("zip", paste0("cache/", s3_path), local_path))
+    } else {
+      local_path <- paste0("cache/", object.name, ".csv")
+      if(!class(object) %in% c("data.frame", "data.table"))
+        stop("Only data.table-like objects are allowed when zip_data_bool = FALSE")
+      write.csv(object, file = local_path, row.names = FALSE, quote = FALSE)
+      s3_path <- paste0(cache_date %>% gsub("-", "_", .), "_", object.name, ".csv")
+    }
+    
     print("Uploading cache to S3")
     put_object_response <- put_object(
       file = paste0("cache/", s3_path), 
@@ -55,6 +66,7 @@ cache.dated <- function(object, use_feather = FALSE, cache_date = Sys.Date(),
     Sys.unsetenv("AWS_SECRET_ACCESS_KEY")
     Sys.unsetenv("AWS_DEFAULT_REGION")
     return(TRUE)
+
   }
 }
 
@@ -70,7 +82,8 @@ load.cache.dated <- function(object.name,
   bucket_name = NULL, force_s3_check = TRUE,
   AWS_ACCESS_KEY_ID = Sys.getenv("AWSAccessKeyId"),
   AWS_SECRET_ACCESS_KEY = Sys.getenv("AWSSecretKey"), 
-  AWS_DEFAULT_REGION = "eu-west-1"
+  AWS_DEFAULT_REGION = "eu-west-1",
+  zip_data_bool = TRUE
   ){
 
   if(!use_s3){
@@ -121,8 +134,12 @@ load.cache.dated <- function(object.name,
       files <- bucket_df$Key
       ####
       if(!is.null(cache_date)){
+        if(zip_data_bool)
+          file_format_aux <- "zip"
+        else
+          file_format_aux <- "csv"
         file.matches <- grep(paste0("[0-9]{4,4}_[0-9]{2,2}_[0-9]{2,2}_", 
-            object.name, "\\.(zip)"),
+            object.name, "\\.(", file_format_aux, ")"),
             files, value = TRUE)
         matched.dates <- gsub(paste0("_", object.name, ".*"), "", file.matches) %>%
             as.Date(format = "%Y_%m_%d")
@@ -132,7 +149,7 @@ load.cache.dated <- function(object.name,
                 file.match <- file.matches[which(as.Date(cache_date) == matched.dates)]
             }
       } else {
-          file.match <- grep(paste0("[0-9]{4,4}_[0-9]{2,2}_[0-9]{2,2}_", object.name, "\\.zip"),
+          file.match <- grep(paste0("[0-9]{4,4}_[0-9]{2,2}_[0-9]{2,2}_", object.name, "\\.", file_format_aux),
               files, value = TRUE) %>% sort %>% tail(1)
       }
 
