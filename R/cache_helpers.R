@@ -46,22 +46,44 @@ cache.dated <- function(object, use_feather = FALSE, cache_date = Sys.Date(),
       saveRDS(object, file = local_path)
       s3_path <- paste0(cache_date %>% gsub("-", "_", .), "_", object.name, ".zip")
       system(paste("zip", paste0("cache/", s3_path), local_path))
+
+      print(s3_path)
+      print(local_path)
+      print("Uploading cache to S3")
+
+      put_object_response <- put_object(
+        file = paste0("cache/", s3_path), 
+        object = s3_path, bucket = bucket_name
+      )
+
+      if(put_object_response)
+        file.remove(paste0("cache/", s3_path))
+
     } else {
       local_path <- paste0("cache/", object.name, ".csv")
       if(!class(object) %in% c("data.frame", "data.table"))
         stop("Only data.table-like objects are allowed when zip_data_bool = FALSE")
       write.csv(object, file = local_path, row.names = FALSE, quote = FALSE)
       s3_path <- paste0(cache_date %>% gsub("-", "_", .), "_", object.name, ".csv")
+
+      print(s3_path)
+      print(local_path)
+      print("Uploading cache to S3")
+
+      put_object_response <- put_object(
+        file = local_path, 
+        object = s3_path, bucket = bucket_name
+      )
+
     }
-    
-    print("Uploading cache to S3")
-    put_object_response <- put_object(
-      file = paste0("cache/", s3_path), 
-      object = s3_path, bucket = bucket_name
-    )
+
+
+    # put_object_response <- put_object(
+    #   file = paste0("cache/", s3_path), 
+    #   object = s3_path, bucket = bucket_name
+    # )
     # print(put_object_response)
-    if(put_object_response)
-      file.remove(paste0("cache/", s3_path))
+
     Sys.unsetenv("AWS_ACCESS_KEY_ID")
     Sys.unsetenv("AWS_SECRET_ACCESS_KEY")
     Sys.unsetenv("AWS_DEFAULT_REGION")
@@ -121,12 +143,22 @@ load.cache.dated <- function(object.name,
       "AWS_SECRET_ACCESS_KEY" = AWS_SECRET_ACCESS_KEY,
       "AWS_DEFAULT_REGION" = AWS_DEFAULT_REGION
     )
+    if(zip_data_bool){
+      file_format_aux <- "zip"
+      local_file_format_aux <- "rds"
+      read_fun <- readRDS
+    }
+    else {
+      file_format_aux <- "csv"
+      local_file_format_aux <- "csv"
+      read_fun <- read.csv
+    }
 
-    if((paste0(object.name, ".rds") %in% dir("cache")) & !force_s3_check){
+    if((paste0(object.name, file_format_aux) %in% dir("cache")) & !force_s3_check){
       Sys.unsetenv("AWS_ACCESS_KEY_ID")
       Sys.unsetenv("AWS_SECRET_ACCESS_KEY")
       Sys.unsetenv("AWS_DEFAULT_REGION")
-      return(readRDS(paste0("cache/", object.name, ".rds")))
+      return(read_fun(paste0("cache/", object.name, file_format_aux)))
     } else {
       if(is.null(bucket_name))
         stop("Must specify bucket_name when using S3")
@@ -134,10 +166,6 @@ load.cache.dated <- function(object.name,
       files <- bucket_df$Key
       ####
       if(!is.null(cache_date)){
-        if(zip_data_bool)
-          file_format_aux <- "zip"
-        else
-          file_format_aux <- "csv"
         file.matches <- grep(paste0("[0-9]{4,4}_[0-9]{2,2}_[0-9]{2,2}_", 
             object.name, "\\.(", file_format_aux, ")"),
             files, value = TRUE)
@@ -158,14 +186,15 @@ load.cache.dated <- function(object.name,
         file = file.path("cache", file.match) , 
         bucket = bucket_name
       )
-      
-      unzip.response <- system(paste0("unzip -o ", download_object_response, " -d ./"))
-      if(unzip.response == 0)
-        file.remove(download_object_response)
+      if(zip_data_bool){
+        unzip.response <- system(paste0("unzip -o ", download_object_response, " -d ./"))
+        if(unzip.response == 0)
+          file.remove(download_object_response)        
+      }
       Sys.unsetenv("AWS_ACCESS_KEY_ID")
       Sys.unsetenv("AWS_SECRET_ACCESS_KEY")
       Sys.unsetenv("AWS_DEFAULT_REGION")
-      return(readRDS(paste0("cache/", object.name, ".rds")))
+      return(read_fun(paste0("cache/", object.name, ".", local_file_format_aux)))
     }    
   }
 }
