@@ -151,7 +151,7 @@ load.cache.dated <- function(object.name,
     else {
       file_format_aux <- "csv"
       local_file_format_aux <- "csv"
-      read_fun <- read.csv
+      read_fun <- fread
     }
 
     if((paste0(object.name, file_format_aux) %in% dir("cache")) & !force_s3_check){
