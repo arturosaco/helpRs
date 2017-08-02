@@ -106,7 +106,8 @@ load.cache.dated <- function(object.name,
   AWS_ACCESS_KEY_ID = Sys.getenv("AWSAccessKeyId"),
   AWS_SECRET_ACCESS_KEY = Sys.getenv("AWSSecretKey"), 
   AWS_DEFAULT_REGION = "eu-west-1",
-  zip_data_bool = TRUE
+  zip_data_bool = TRUE,
+  bucket_folder_prefix = ""
   ){
 
   if(!use_s3){
@@ -167,10 +168,11 @@ load.cache.dated <- function(object.name,
       files <- bucket_df$Key
       ####
       if(!is.null(cache_date)){
-        file.matches <- grep(paste0("[0-9]{4,4}_[0-9]{2,2}_[0-9]{2,2}_", 
+        file.matches <- grep(paste0(bucket_folder_prefix, 
+            "[0-9]{4,4}_[0-9]{2,2}_[0-9]{2,2}_", 
             object.name, "\\.(", file_format_aux, ")"),
             files, value = TRUE)
-        matched.dates <- gsub(paste0("_", object.name, ".*"), "", file.matches) %>%
+        matched.dates <- gsub(".*([0-9]{4}_[0-9]{2}_[0-9]{2}).*", "\\1", file.matches) %>%
             as.Date(format = "%Y_%m_%d")
             if(!as.Date(cache_date) %in% matched.dates){
                 stop("Requested cache date couldn't be found")
@@ -178,7 +180,7 @@ load.cache.dated <- function(object.name,
                 file.match <- file.matches[which(as.Date(cache_date) == matched.dates)]
             }
       } else {
-          file.match <- grep(paste0("[0-9]{4,4}_[0-9]{2,2}_[0-9]{2,2}_", object.name, "\\.", file_format_aux),
+          file.match <- grep(paste0(bucket_folder_prefix, "[0-9]{4,4}_[0-9]{2,2}_[0-9]{2,2}_", object.name, "\\.", file_format_aux),
               files, value = TRUE) %>% sort %>% tail(1)
       }
 
