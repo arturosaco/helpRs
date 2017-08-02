@@ -43,6 +43,7 @@ cache.dated <- function(object, use_feather = FALSE, cache_date = Sys.Date(),
     )
     
     if(zip_data_bool){
+      # object.name <- paste0(bucket_folder_prefix, object.name)
       local_path <- paste0("cache/", object.name, ".rds")
       saveRDS(object, file = local_path)
       s3_path <- paste0(cache_date %>% gsub("-", "_", .), "_", object.name, ".zip")
@@ -54,7 +55,7 @@ cache.dated <- function(object, use_feather = FALSE, cache_date = Sys.Date(),
 
       put_object_response <- put_object(
         file = paste0("cache/", s3_path), 
-        object = s3_path, bucket = bucket_name
+        object = paste0(bucket_folder_prefix, s3_path), bucket = bucket_name
       )
 
       if(put_object_response)
@@ -262,4 +263,6 @@ clean.cache.dated <- function(clean.older.than.days = 7, remove = FALSE){
     system(system.rm.string)
   return(files.to.remove.chr)
 }
+
+
 
