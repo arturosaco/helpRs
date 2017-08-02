@@ -10,7 +10,8 @@ cache.dated <- function(object, use_feather = FALSE, cache_date = Sys.Date(),
   AWS_ACCESS_KEY_ID = Sys.getenv("AWSAccessKeyId"),
   AWS_SECRET_ACCESS_KEY = Sys.getenv("AWSSecretKey"), 
   AWS_DEFAULT_REGION = "eu-west-1",
-  zip_data_bool = TRUE){
+  zip_data_bool = TRUE,
+  bucket_folder_prefix = ""){
 
   object.name <- deparse(substitute(object))
   if(!use_s3){
@@ -61,11 +62,11 @@ cache.dated <- function(object, use_feather = FALSE, cache_date = Sys.Date(),
 
     } else {
       local_path <- paste0("cache/", object.name, ".csv")
-      if(!class(object) %in% c("data.frame", "data.table"))
+      if(!any(class(object)) %in% c("data.frame", "data.table"))
         stop("Only data.table-like objects are allowed when zip_data_bool = FALSE")
       write.csv(object, file = local_path, row.names = FALSE, quote = FALSE)
       s3_path <- paste0(cache_date %>% gsub("-", "_", .), "_", object.name, ".csv")
-
+      s3_path <- paste0(bucket_folder_prefix, s3_path)
       print(s3_path)
       print(local_path)
       print("Uploading cache to S3")
