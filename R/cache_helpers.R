@@ -198,12 +198,12 @@ load.cache.dated <- function(object.name,
       Sys.unsetenv("AWS_SECRET_ACCESS_KEY")
       Sys.unsetenv("AWS_DEFAULT_REGION")
       if(zip_data_bool){
+        return(read_fun(paste0("cache/", object.name, ".", local_file_format_aux)))
+      } else {
         return(read_fun(paste0("cache/", 
           gsub("\\.csv", "", file.match), 
             ".", local_file_format_aux))
         )
-      } else {
-        return(read_fun(paste0("cache/", object.name, ".", local_file_format_aux)))
       }
     }    
   }
