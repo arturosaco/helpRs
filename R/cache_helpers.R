@@ -31,6 +31,10 @@ cache.dated <- function(object, use_feather = FALSE, cache_date = Sys.Date(),
       invisible(NULL)
     }
   } else {
+    # The logic of the local cache is that it preserves it should 
+    # preserve only one local copy of the file, and that the 
+    # versioning is only done in s3
+    
     if(is.null(bucket_name))
       stop("Must specify bucket_name when using S3")
     if(any(c(AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY) == "")){
@@ -108,7 +112,8 @@ load.cache.dated <- function(object.name,
   AWS_SECRET_ACCESS_KEY = Sys.getenv("AWSSecretKey"), 
   AWS_DEFAULT_REGION = "eu-west-1",
   zip_data_bool = TRUE,
-  bucket_folder_prefix = ""
+  bucket_folder_prefix = "",
+  write_to_disk = TRUE
   ){
 
   if(!use_s3){
@@ -188,7 +193,8 @@ load.cache.dated <- function(object.name,
       ####
       download_object_response <- save_object(file.match, 
         file = file.path("cache", file.match) , 
-        bucket = bucket_name
+        bucket = bucket_name,
+        write_to_disk = write_to_disk
       )
       if(zip_data_bool){
         unzip.response <- system(paste0("unzip -o ", download_object_response, " -d ./"))
