@@ -99,6 +99,7 @@ rbindlist.valid <- function(list.data.tables.x){
 #' @import urltools
 
 clean.urls.f <- function(original.urls, tld = getTLD()){
+    # install tldextract with devtools::install_github("jayjacobs/tldextract")
     original.urls %>%
         str_trim %>% 
         gsub("(https?\\:\\/\\/)?(\\/?www.?[0-9]?\\.+)?", "", .) %>%
